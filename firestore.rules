@@ -1,0 +1,98 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Fields: uid, name, email, role, phone, bio, address, photoURL, villageId, skills, createdAt
+    //
+    // Collection: inventory
+    // Fields: name, category, quantity, unit, minThreshold, lastUpdated
+    //
+    // Collection: production_batches
+    // Fields: batchId, productName, status, quantity, createdAt, createdBy
+    //
+    // Collection: training_courses
+    // Fields: title, description, category, duration, instructorId, createdAt
+    //
+    // Collection: sales_orders
+    // Fields: orderId, customerName, items, totalAmount, status, createdAt
+    //
+    // Collection: financial_transactions
+    // Fields: description, amount, type, category, date, createdBy
+    //
+    // Collection: compliance_docs
+    // Fields: title, type, status, expiryDate, uploadedBy, createdAt
+    //
+    // ===============================================================
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+         request.auth.token.email == "narendrasg757@gmail.com");
+    }
+
+    function isVillageHead() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'village_head';
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'name', 'email', 'role', 'createdAt']) &&
+             data.uid is string && data.uid.size() > 0 &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.email is string && data.email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$") &&
+             data.role in ['admin', 'village_head', 'trainer', 'worker'];
+    }
+
+    // Rules
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isAuthenticated() && (isOwner(userId) || isAdmin()) && isValidUser(request.resource.data);
+    }
+
+    match /inventory/{itemId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() || isVillageHead();
+    }
+
+    match /production_batches/{batchId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    match /training_courses/{courseId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() || isVillageHead() || (isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'trainer');
+    }
+
+    match /sales_orders/{orderId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() || isVillageHead();
+    }
+
+    match /financial_transactions/{transactionId} {
+      allow read: if isAdmin() || isVillageHead();
+      allow write: if isAdmin() || isVillageHead();
+    }
+
+    match /compliance_docs/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() || isVillageHead();
+    }
+  }
+}

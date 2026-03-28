@@ -1,0 +1,5 @@
+{
+  "name": "Mera Pind Balle Balle ERP",
+  "description": "Professional ERP platform for rural empowerment, production tracking, and financial management.",
+  "requestFramePermissions": ["camera", "geolocation"]
+}

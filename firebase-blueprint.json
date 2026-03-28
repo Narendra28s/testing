@@ -1,0 +1,116 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile with role-based access control and personal details",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Unique user ID" },
+        "name": { "type": "string", "description": "User's full name" },
+        "email": { "type": "string", "format": "email", "description": "User's email address" },
+        "role": { "type": "string", "enum": ["admin", "village_head", "trainer", "worker"], "description": "User's role in the ERP" },
+        "phone": { "type": "string", "description": "User's contact number" },
+        "bio": { "type": "string", "description": "User's short bio" },
+        "address": { "type": "string", "description": "User's village address" },
+        "photoURL": { "type": "string", "description": "User's profile picture URL" },
+        "villageId": { "type": "string", "description": "Village ID associated with the user" },
+        "skills": { "type": "array", "items": { "type": "string" }, "description": "List of user's skills" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp" }
+      },
+      "required": ["uid", "name", "email", "role", "createdAt"]
+    },
+    "InventoryItem": {
+      "title": "InventoryItem",
+      "description": "An item in the inventory",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Name of the item" },
+        "category": { "type": "string", "description": "Category of the item" },
+        "quantity": { "type": "number", "description": "Current quantity in stock" },
+        "unit": { "type": "string", "description": "Unit of measurement (kg, liters, units)" },
+        "minThreshold": { "type": "number", "description": "Minimum stock threshold for alerts" },
+        "lastUpdated": { "type": "object", "description": "Last update timestamp" }
+      },
+      "required": ["name", "category", "quantity", "unit"]
+    },
+    "ProductionBatch": {
+      "title": "ProductionBatch",
+      "description": "A batch of products in production",
+      "type": "object",
+      "properties": {
+        "batchId": { "type": "string", "description": "Unique batch ID" },
+        "productName": { "type": "string", "description": "Name of the product" },
+        "status": { "type": "string", "enum": ["pending", "in-progress", "completed"], "description": "Current status of the batch" },
+        "quantity": { "type": "number", "description": "Quantity of products in the batch" },
+        "createdAt": { "type": "object", "description": "Creation timestamp" },
+        "createdBy": { "type": "string", "description": "User ID who created the batch" }
+      },
+      "required": ["batchId", "productName", "status", "quantity", "createdAt"]
+    },
+    "TrainingCourse": {
+      "title": "TrainingCourse",
+      "description": "A training course for workers",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "Title of the course" },
+        "description": { "type": "string", "description": "Description of the course" },
+        "category": { "type": "string", "description": "Category (e.g., Agriculture, Handicrafts)" },
+        "duration": { "type": "string", "description": "Duration of the course" },
+        "instructorId": { "type": "string", "description": "User ID of the instructor" },
+        "createdAt": { "type": "object", "description": "Creation timestamp" }
+      },
+      "required": ["title", "description", "category", "duration"]
+    },
+    "SalesOrder": {
+      "title": "SalesOrder",
+      "description": "A sales order from a customer",
+      "type": "object",
+      "properties": {
+        "orderId": { "type": "string", "description": "Unique order ID" },
+        "customerName": { "type": "string", "description": "Name of the customer" },
+        "items": { "type": "array", "items": { "type": "object" }, "description": "List of items in the order" },
+        "totalAmount": { "type": "number", "description": "Total amount of the order" },
+        "status": { "type": "string", "enum": ["pending", "shipped", "delivered", "cancelled"], "description": "Order status" },
+        "createdAt": { "type": "object", "description": "Creation timestamp" }
+      },
+      "required": ["orderId", "customerName", "items", "totalAmount", "status"]
+    },
+    "FinancialTransaction": {
+      "title": "FinancialTransaction",
+      "description": "A financial transaction record",
+      "type": "object",
+      "properties": {
+        "description": { "type": "string", "description": "Description of the transaction" },
+        "amount": { "type": "number", "description": "Amount of the transaction" },
+        "type": { "type": "string", "enum": ["income", "expense"], "description": "Type of the transaction" },
+        "category": { "type": "string", "description": "Category (e.g., Sales, Raw Materials, Salaries)" },
+        "date": { "type": "object", "description": "Date of the transaction" },
+        "createdBy": { "type": "string", "description": "User ID who created the record" }
+      },
+      "required": ["description", "amount", "type", "category", "date"]
+    },
+    "ComplianceDoc": {
+      "title": "ComplianceDoc",
+      "description": "A compliance or legal document",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "Title of the document" },
+        "type": { "type": "string", "enum": ["License", "Certification", "Legal", "Audit"], "description": "Type of document" },
+        "status": { "type": "string", "enum": ["active", "expired", "pending"], "description": "Status of the document" },
+        "expiryDate": { "type": "string", "description": "Expiry date of the document" },
+        "uploadedBy": { "type": "string", "description": "User ID who uploaded the document" },
+        "createdAt": { "type": "object", "description": "Creation timestamp" }
+      },
+      "required": ["title", "type", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": { "schema": "UserProfile", "description": "User profiles" },
+    "/inventory/{itemId}": { "schema": "InventoryItem", "description": "Inventory items" },
+    "/production_batches/{batchId}": { "schema": "ProductionBatch", "description": "Production batches" },
+    "/training_courses/{courseId}": { "schema": "TrainingCourse", "description": "Training courses" },
+    "/sales_orders/{orderId}": { "schema": "SalesOrder", "description": "Sales orders" },
+    "/financial_transactions/{transactionId}": { "schema": "FinancialTransaction", "description": "Financial transactions" },
+    "/compliance_docs/{docId}": { "schema": "ComplianceDoc", "description": "Compliance documents" }
+  }
+}
